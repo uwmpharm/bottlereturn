@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory Return Station — UW Medicine</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --uw-purple:#32006e;
+  --uw-gold:#FFC700;
+  --uw-purple-2:#54348b;
+  --uw-purple-3:#9663a8;
+  --uw-gray-1:#333d47;
+  --uw-gray-2:#566069;
+  --uw-teal:#008895;
+  --uw-blue:#2C6ACE;
+  --uw-red:#D24310;
+  --bg:#f4f3f7;
+  --surface:#ffffff;
+  --surface2:#f9f8fb;
+  --border:#e0dcea;
+  --border2:#c8c2d8;
+  --text:#1a1a2e;
+  --dim:#566069;
+  --muted:#a6acb1;
+  --sans:'Open Sans',system-ui,sans-serif;
+  --r:8px;--r2:12px;
+}
+
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;font-size:20px}
+
+/* ── HEADER ─────────────────────────────────── */
+header{background:var(--uw-purple);flex-shrink:0;}
+.hdr-gradient{height:6px;background:linear-gradient(to right, var(--uw-purple) 0%, var(--uw-purple) 25%, #76236C 100%);}
+.hdr-inner{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;}
+.hdr-brand{display:flex;align-items:center;gap:18px}
+.hdr-logo-lockup{display:flex;flex-direction:column;gap:2px}
+.hdr-logo-name{font-size:28px;font-weight:700;letter-spacing:.01em;color:#ffffff;line-height:1.1;}
+.hdr-logo-sub{font-size:13px;font-weight:400;letter-spacing:.18em;color:rgba(255,255,255,.65);text-transform:uppercase;}
+.hdr-divider{width:1px;height:44px;background:rgba(255,255,255,.25)}
+.hdr-app-name{font-size:18px;font-weight:600;color:rgba(255,255,255,.85);letter-spacing:.04em;text-transform:uppercase;}
+.hdr-right{display:flex;align-items:center;gap:12px}
+.conn-pill{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 16px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:30px;
+  font-size:14px;font-weight:600;color:rgba(255,255,255,.8);cursor:pointer;letter-spacing:.04em;text-transform:uppercase;
+  transition:background .15s;
+}
+.conn-pill:hover{background:rgba(255,255,255,.18)}
+.dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.3);transition:all .3s;flex-shrink:0}
+.dot.ok{background:#22c55e;box-shadow:0 0 8px #22c55e}
+.dot.err{background:#ef4444}
+
+/* ── MAIN ────────────────────────────────────── */
+main{flex:1;display:flex;flex-direction:column;align-items:center;padding:40px 24px 80px;width:100%;max-width:900px;margin:0 auto}
+
+/* ── SCAN BAR ────────────────────────────────── */
+.scan-wrap{
+  width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);
+  padding:28px 32px;margin-bottom:28px;box-shadow:0 2px 8px rgba(50,0,110,.06);
+}
+.scan-lbl{font-size:14px;font-weight:700;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.scan-row{display:flex;gap:12px}
+.scan-in{
+  flex:1;font-family:var(--sans);font-size:28px;font-weight:700;
+  padding:18px 24px;background:#fdfcff;border:2px solid var(--border2);border-radius:var(--r);
+  color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;letter-spacing:.02em;
+}
+.scan-in:focus{border-color:var(--uw-purple);box-shadow:0 0 0 4px rgba(50,0,110,.12)}
+.scan-in::placeholder{font-size:20px;font-weight:400;color:var(--muted);letter-spacing:0}
+.btn-go{
+  padding:18px 32px;background:var(--uw-purple);color:#fff;border:none;border-radius:var(--r);
+  font-family:var(--sans);font-size:18px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.btn-go:hover{background:var(--uw-purple-2)}.btn-go:active{transform:scale(.97)}.btn-go:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.modes{display:flex;gap:8px;margin-top:16px;align-items:center}
+.mode-lbl{font-size:14px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600;margin-right:6px}
+.mode{
+  font-size:14px;font-weight:600;padding:6px 16px;border-radius:24px;letter-spacing:.04em;
+  border:1px solid var(--border2);background:transparent;color:var(--dim);cursor:pointer;transition:all .15s;
+  text-transform:uppercase;
+}
+.mode.on{background:var(--uw-purple);border-color:var(--uw-purple);color:#fff}
+.mode:hover:not(.on){border-color:var(--uw-purple-3);color:var(--uw-purple)}
+
+/* ── RESULT ──────────────────────────────────── */
+.result{width:100%;display:none;margin-bottom:28px;animation:up .22s ease}
+.result.show{display:block}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Drug/Item name bar */
+.drug-bar{
+  display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+  padding:18px 28px;background:var(--uw-purple);border-radius:var(--r2) var(--r2) 0 0;
+}
+.drug-name{font-size:24px;font-weight:700;color:#ffffff}
+.drug-strength{font-size:18px;font-weight:400;color:rgba(255,255,255,.7)}
+
+/* ── LOCATION CARD ───────────────────────────── */
+.loc-card{
+  background:var(--surface);border:1px solid var(--border);border-top:none;
+  border-radius:0 0 var(--r2) var(--r2);overflow:hidden;box-shadow:0 4px 12px rgba(50,0,110,.07);
+}
+.loc-full-strip{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:22px 32px;background:var(--uw-purple);border-bottom:6px solid var(--uw-gold);
+}
+.loc-full-code{font-size:42px;font-weight:700;letter-spacing:.12em;color:var(--uw-gold);font-family:var(--sans);}
+.loc-full-hint{font-size:16px;color:rgba(255,255,255,.6);text-align:right;line-height:1.6;max-width:300px}
+.loc-full-hint b{
+  display:block;font-size:13px;letter-spacing:.12em;color:rgba(255,255,255,.4);
+  font-weight:700;text-transform:uppercase;margin-bottom:4px;
+}
+
+/* ── SEGMENT ROWS ────────────────────────────── */
+.seg-row{display:flex;align-items:stretch;border-bottom:1px solid var(--border)}
+.seg-row:last-child{border-bottom:none}
+.seg-row:hover{background:var(--surface2)}
+.seg-label-col{
+  width:160px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;
+  padding:20px 24px;border-right:1px solid var(--border);background:var(--surface2);
+}
+.seg-label-name{font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.seg-label-desc{font-size:14px;color:var(--muted);margin-top:4px;line-height:1.4}
+.seg-value-col{flex:1;display:flex;align-items:center;padding:20px 32px;gap:24px}
+.seg-val{font-family:var(--sans);font-weight:700;line-height:1}
+.seg-val.sz1{font-size:80px}
+.seg-val.sz2{font-size:60px}
+.seg-val.sz3{font-size:48px}
+.seg-val.sz4{font-size:38px}
+
+.seg-row:nth-child(1) .seg-val{color:var(--uw-purple)}
+.seg-row:nth-child(2) .seg-val{color:var(--uw-teal)}
+.seg-row:nth-child(3) .seg-val{color:#b87a00} 
+.seg-row:nth-child(4) .seg-val{color:var(--uw-purple-2)}
+.seg-row:nth-child(5) .seg-val{color:var(--uw-blue)}
+
+.seg-row:nth-child(1) .badge{background:rgba(50,0,110,.08);border-color:rgba(50,0,110,.2);color:var(--uw-purple)}
+.seg-row:nth-child(2) .badge{background:rgba(0,136,149,.08);border-color:rgba(0,136,149,.25);color:var(--uw-teal)}
+.seg-row:nth-child(3) .badge{background:rgba(184,122,0,.08);border-color:rgba(184,122,0,.25);color:#b87a00}
+.seg-row:nth-child(4) .badge{background:rgba(84,52,139,.08);border-color:rgba(84,52,139,.25);color:var(--uw-purple-2)}
+.seg-row:nth-child(5) .badge{background:rgba(44,106,206,.08);border-color:rgba(44,106,206,.25);color:var(--uw-blue)}
+
+.seg-meta{display:flex;flex-direction:column;gap:8px}
+.seg-phonetic{display:flex;flex-wrap:wrap;gap:6px}
+.badge{
+  font-size:16px;font-weight:700;padding:6px 12px;border-radius:6px;border:1px solid;
+  letter-spacing:.02em;font-family:var(--sans);
+}
+.seg-say{font-size:14px;color:var(--muted);line-height:1.4}
+
+/* ── IDLE ──────────────────────────────────── */
+.idle{display:flex;flex-direction:column;align-items:center;gap:16px;padding:80px 20px;color:var(--muted);text-align:center}
+.idle-icon{
+  width:80px;height:80px;border-radius:50%;background:rgba(50,0,110,.06);
+  display:flex;align-items:center;justify-content:center;
+}
+.idle-icon svg{width:36px;height:36px;stroke:var(--uw-purple-3);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.6}
+.idle p{font-size:20px;font-weight:600;color:var(--dim)}
+.idle span{font-size:16px;color:var(--muted);letter-spacing:.02em}
+
+/* ── ASSIGN CARD ─────────────────────────────── */
+.assign{
+  width:100%;display:none;background:var(--surface);border:1px solid #f0c280;border-radius:var(--r2);
+  overflow:hidden;margin-bottom:28px;animation:up .22s ease;box-shadow:0 4px 12px rgba(210,67,16,.07);
+}
+.assign.show{display:block}
+.assign-hdr{
+  display:flex;align-items:center;gap:14px;padding:18px 28px;background:#fff8ec;border-bottom:1px solid #f0c280;
+}
+.assign-icon{
+  width:36px;height:36px;border-radius:50%;background:#ffedc4;
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+}
+.assign-ttl{font-weight:700;color:#96540a;font-size:18px;letter-spacing:.01em}
+.assign-sub{font-size:14px;color:#b87a00;margin-top:2px}
+.assign-body{padding:28px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.fw{grid-column:1/-1}
+.fg{display:flex;flex-direction:column;gap:8px}
+.fl{font-size:13px;font-weight:700;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+.fi{
+  font-family:var(--sans);font-size:18px;padding:14px 16px;
+  background:#fdfcff;border:1px solid var(--border2);border-radius:var(--r);
+  color:var(--text);outline:none;transition:all .15s;width:100%;
+}
+.fi:focus{border-color:var(--uw-purple);box-shadow:0 0 0 3px rgba(50,0,110,.1)}
+.fi-loc{font-size:28px;font-weight:700;letter-spacing:.1em}
+.assign-footer{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding-top:8px}
+.btn-cancel{
+  font-size:16px;font-weight:600;padding:14px 24px;letter-spacing:.04em;text-transform:uppercase;
+  background:transparent;border:1px solid var(--border2);color:var(--dim);border-radius:var(--r);cursor:pointer;
+  transition:all .15s;
+}
+.btn-cancel:hover{border-color:var(--uw-gray-2);color:var(--text)}
+.btn-save{
+  font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:14px 28px;background:var(--uw-purple);color:#fff;border:none;border-radius:var(--r);
+  cursor:pointer;transition:all .15s;
+}
+.btn-save:hover{background:var(--uw-purple-2)}.btn-save:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── TOAST (UPDATED) ───────────────────────── */
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(150px);
+  padding:18px 36px;border-radius:var(--r2);
+  font-size:18px;font-weight:700;letter-spacing:.04em;
+  z-index:999;white-space:nowrap;
+  transition:transform .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow:0 8px 30px rgba(0,0,0,.3);text-transform:uppercase;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.ok{background:var(--uw-purple);color:#fff}
+.toast.er{background:var(--uw-red);color:#fff}
+.toast.wn{background:var(--uw-gold);color:#3a2200}
+
+/* ── CONFIG MODAL ────────────────────────── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(20,10,40,.7);z-index:500;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:32px;width:100%;max-width:520px;box-shadow:0 12px 40px rgba(50,0,110,.25)}
+.modal-hdr{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.modal-dot{width:16px;height:16px;border-radius:50%;background:var(--uw-purple);flex-shrink:0}
+.modal h2{font-size:20px;font-weight:700;letter-spacing:.02em;color:var(--uw-purple)}
+.modal p{font-size:16px;color:var(--dim);margin-bottom:24px;line-height:1.6;margin-top:8px}
+.modal .fg{margin-bottom:16px}
+.modal-foot{display:flex;gap:12px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+
+/* ── SPINNER ─────────────────────────────── */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:20px;height:20px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .55s linear infinite;display:inline-block}
+
+/* ── FOOTER ──────────────────────────────── */
+footer{
+  background:var(--uw-gray-1);color:rgba(255,255,255,.55);
+  font-size:14px;text-align:center;padding:16px 24px;
+  letter-spacing:.04em;flex-shrink:0;
+}
+
+@media(max-width:700px){
+  .seg-label-col{width:100px;padding:16px 14px}
+  .seg-val.sz1{font-size:56px}.seg-val.sz2{font-size:42px}.seg-val.sz3{font-size:32px}.seg-val.sz4{font-size:26px}
+  .seg-value-col{padding:16px 20px;gap:16px}
+  .assign-body{grid-template-columns:1fr}
+  .drug-bar{flex-direction:column;gap:4px}
+  .loc-full-strip{flex-direction:column;align-items:flex-start}
+  .loc-full-hint{text-align:left;max-width:none}
+  .hdr-inner{padding:16px 20px}
+  main{padding:24px 16px 64px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-gradient"></div>
+  <div class="hdr-inner">
+    <div class="hdr-brand">
+      <div class="hdr-logo-lockup">
+        <div class="hdr-logo-name">UW Medicine</div>
+        <div class="hdr-logo-sub">University of Washington</div>
+      </div>
+      <div class="hdr-divider"></div>
+      <div class="hdr-app-name">Inventory Return Station</div>
+    </div>
+    <div class="hdr-right">
+      <div class="conn-pill" onclick="openCfg()">
+        <div class="dot" id="dot"></div>
+        <span id="connTxt">Not Connected</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div class="scan-wrap">
+    <div class="scan-lbl">Scan or Enter Identifier</div>
+    <div class="scan-row">
+      <input id="inp" class="scan-in" type="text"
+        placeholder="Scan barcode..."
+        autocomplete="off" autocorrect="off" spellcheck="false" autofocus />
+      <button id="goBtn" class="btn-go" onclick="doSearch()">Lookup</button>
+    </div>
+    <div class="modes">
+      <span class="mode-lbl">Mode:</span>
+      <button class="mode on" data-m="scan_code" onclick="setMode(this)">Scan Code</button>
+      <button class="mode" data-m="item" onclick="setMode(this)">Item ID</button>
+      <button class="mode" data-m="description" onclick="setMode(this)">Description</button>
+    </div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="drug-bar">
+      <span class="drug-name" id="rName">—</span>
+      <span class="drug-strength" id="rStrength"></span>
+    </div>
+    <div class="loc-card">
+      <div class="loc-full-strip">
+        <div class="loc-full-code" id="fullCode">—</div>
+        <div class="loc-full-hint">
+          <b>Read aloud as</b>
+          <span id="fullSpoken">—</span>
+        </div>
+      </div>
+      <div id="segGrid"></div>
+    </div>
+  </div>
+
+  <div class="assign" id="assign">
+    <div class="assign-hdr">
+      <div class="assign-icon">⚠</div>
+      <div>
+        <div class="assign-ttl">Unknown Item</div>
+        <div class="assign-sub">Scan code not found in database. Assign a location now to save it.</div>
+      </div>
+    </div>
+    <div class="assign-body">
+      <div class="fg fw"><label class="fl">Item Description</label><input class="fi" id="aDesc" placeholder="e.g. 500ML STERILE WATER (Optional)" /></div>
+      <div class="fg"><label class="fl">Item ID</label><input class="fi" id="aItem" placeholder="e.g. 10045 (Optional)" /></div>
+      <div class="fg"><label class="fl">Scan Code *</label><input class="fi" id="aScanCode" placeholder="Barcode value" /></div>
+      <div class="fg fw"><label class="fl">Location Code *</label><input class="fi fi-loc" id="aLoc" placeholder="e.g. FS1.01.A" /></div>
+      
+      <div class="fg assign-footer fw">
+        <button class="btn-cancel" onclick="hideAssign()">Cancel</button>
+        <button class="btn-save" id="saveBtn" onclick="saveItem()">Save to Database</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="idle" id="idle">
+    <div class="idle-icon">
+      <svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="3"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="10" x2="15" y2="10"/><circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg>
+    </div>
+    <p>Ready to scan</p>
+    <span>Scan any item barcode to look up its return location</span>
+  </div>
+
+</main>
+
+<footer>
+  &copy; 2026 University of Washington &nbsp;|&nbsp; UW Medicine &nbsp;|&nbsp; Internal Use Only
+</footer>
+
+<div class="overlay" id="cfgModal">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-dot"></div><h2>Supabase Configuration</h2></div>
+    <p>Enter your project URL and anon key. Saved in your browser — only sent to your own Supabase instance.</p>
+    <div class="fg"><label class="fl">Project URL</label><input class="fi" id="cfgUrl" placeholder="https://xxxx.supabase.co" /></div>
+    <div class="fg"><label class="fl">Anon Key</label><input class="fi" id="cfgKey" placeholder="eyJ…" /></div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeCfg()">Cancel</button>
+      <button class="btn-go" onclick="saveCfg()">Save &amp; Test Connection</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let SB_URL=localStorage.getItem('sb_url')||'';
+let SB_KEY=localStorage.getItem('sb_key')||'';
+let mode='scan_code',lastScan='';
+
+const NATO={A:'Alpha',B:'Bravo',C:'Charlie',D:'Delta',E:'Echo',F:'Foxtrot',G:'Golf',H:'Hotel',I:'India',J:'Juliet',K:'Kilo',L:'Lima',M:'Mike',N:'November',O:'Oscar',P:'Papa',Q:'Quebec',R:'Romeo',S:'Sierra',T:'Tango',U:'Uniform',V:'Victor',W:'Whiskey',X:'X-ray',Y:'Yankee',Z:'Zulu'};
+const SEG_META=[
+  {name:'Shelf Group',desc:'Which shelf unit'},
+  {name:'Row',desc:'Horizontal row number'},
+  {name:'Bin',desc:'Bin within row'},
+  {name:'Pocket',desc:'Final pocket / slot'},
+  {name:'Sub-loc',desc:'Additional locator'},
+];
+
+document.addEventListener('DOMContentLoaded',()=>{
+  if(SB_URL&&SB_KEY) testConn();
+  document.getElementById('inp').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
+  let t;
+  document.getElementById('inp').addEventListener('input',()=>{
+    clearTimeout(t);const v=document.getElementById('inp').value.trim();
+    if(!v)return;
+    if(mode==='scan_code'&&v.length>=5&&!/\s/.test(v))t=setTimeout(doSearch,400);
+  });
+});
+
+function setMode(btn){
+  document.querySelectorAll('.mode').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');mode=btn.dataset.m;
+  const ph={scan_code:'Scan barcode...',item:'Enter Item ID...',description:'Enter item description...'};
+  document.getElementById('inp').placeholder=ph[mode];
+  document.getElementById('inp').focus();
+}
+
+async function doSearch(){
+  // Strip all backslashes from the input automatically
+  const rawInput = document.getElementById('inp').value.trim();
+  const v = rawInput.replace(/\\/g, ''); 
+  if(!v)return;
+  
+  lastScan=v;hideAll();setBusy(true);
+  if(!SB_URL||!SB_KEY){setBusy(false);toast('Configure Supabase first — click connection status','wn');openCfg();return;}
+  try{
+    let rows=[];
+    if(mode==='scan_code')rows=await byScanCode(v);
+    else if(mode==='item')rows=await byItem(v);
+    else rows=await byDescription(v);
+    
+    setBusy(false);
+    if(rows&&rows.length)showResult(rows[0]);else showAssign();
+  }catch(e){setBusy(false);toast('Error: '+e.message,'er');}
+}
+
+async function sb(path,opts={}){
+  const url=SB_URL.replace(/\/$/,'')+path;
+  const r=await fetch(url,{...opts,headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation',...(opts.headers||{})}});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||e.error||'HTTP '+r.status);}
+  return r.json();
+}
+
+async function byScanCode(v){
+  const norm = v.replace(/[^0-9a-zA-Z\-]/g,'');
+  let candidates = new Set([norm, v]);
+
+  // Extract all digit sequences to find any 8+ continuous digits
+  // Limiting scan length protection to 40 characters
+  const safeStr = v.substring(0, 40); 
+  const digitSeqs = safeStr.match(/\d+/g) || [];
+  
+  for (let seq of digitSeqs) {
+    if (seq.length >= 8) {
+      for (let len = 8; len <= seq.length; len++) {
+        for (let i = 0; i <= seq.length - len; i++) {
+          candidates.add(seq.substring(i, i + len));
+        }
+      }
+    }
+  }
+
+  const queryList = Array.from(candidates).map(c => encodeURIComponent(c)).join(',');
+  const results = await sb(`/rest/v1/scan_codes?scan_code=in.(${queryList})&select=*`);
+  
+  if (results && results.length > 0) {
+    // Prefer exact match if possible, otherwise just return the first match
+    const exact = results.find(r => r.scan_code === norm || r.scan_code === v);
+    return exact ? [exact] : [results[0]];
+  }
+  return [];
+}
+
+async function byItem(v){
+  const c=v.replace(/[^0-9\-]/g,'');
+  return (await sb(`/rest/v1/scan_codes?item=eq.${encodeURIComponent(c)}&select=*&limit=5`))||[];
+}
+async function byDescription(v){
+  return (await sb(`/rest/v1/scan_codes?item_description=ilike.*${encodeURIComponent(v)}*&select=*&order=item_description.asc&limit=10`))||[];
+}
+
+function showResult(b){
+  document.getElementById('rName').textContent=b.item_description||'—';
+  
+  // Show a warning icon if the description needs review
+  if(b.item_description && b.item_description.includes('NEEDS REVIEW')){
+    document.getElementById('rName').innerHTML = '⚠️ ' + b.item_description;
+    document.getElementById('rName').style.color = '#FFC700';
+  } else {
+    document.getElementById('rName').style.color = '#ffffff';
+  }
+
+  document.getElementById('rStrength').textContent=b.item ? 'Item ID: '+b.item : '';
+  buildLocation(b.location||'');
+  document.getElementById('result').classList.add('show');
+  document.getElementById('idle').style.display='none';
+}
+
+function buildLocation(code){
+  document.getElementById('fullCode').textContent=code||'—';
+  const grid=document.getElementById('segGrid'),spokenEl=document.getElementById('fullSpoken');
+  grid.innerHTML='';if(!code){spokenEl.textContent='—';return;}
+  const segs=code.split('.');const spokenParts=[];
+  segs.forEach((seg,i)=>{
+    const meta=SEG_META[i]||{name:'Segment '+(i+1),desc:''};
+    const row=document.createElement('div');row.className='seg-row';
+    const sz=seg.length<=1?'sz1':seg.length<=2?'sz2':seg.length<=3?'sz3':'sz4';
+    const badges=seg.split('').map(c=>{
+      const u=c.toUpperCase();const label=/[A-Z]/.test(u)?(NATO[u]||u):c;
+      return`<span class="badge">${escH(label)}</span>`;
+    }).join('');
+    const charSpoken=seg.split('').map(c=>{const u=c.toUpperCase();return/[A-Z]/.test(u)?(NATO[u]||u):c;}).join(' ');
+    spokenParts.push(meta.name+': '+charSpoken);
+    row.innerHTML=`
+      <div class="seg-label-col">
+        <div class="seg-label-name">${escH(meta.name)}</div>
+        <div class="seg-label-desc">${escH(meta.desc)}</div>
+      </div>
+      <div class="seg-value-col">
+        <div class="seg-val ${sz}">${escH(seg)}</div>
+        <div class="seg-meta">
+          <div class="seg-phonetic">${badges}</div>
+          <div class="seg-say">${escH(charSpoken)}</div>
+        </div>
+      </div>`;
+    grid.appendChild(row);
+  });
+  spokenEl.textContent=spokenParts.join(' — ');
+}
+
+function showAssign(){
+  document.getElementById('idle').style.display='none';
+  document.getElementById('assign').classList.add('show');
+  if(lastScan && mode==='scan_code') document.getElementById('aScanCode').value = lastScan;
+}
+function hideAssign(){document.getElementById('assign').classList.remove('show');document.getElementById('idle').style.display='flex';}
+
+async function saveItem(){
+  const desc=document.getElementById('aDesc').value.trim();
+  const loc=document.getElementById('aLoc').value.trim();
+  const sc=document.getElementById('aScanCode').value.trim();
+  const item=document.getElementById('aItem').value.trim();
+  
+  if(!loc||!sc){toast('Scan Code and Location are required','wn');return;}
+  const sBtn=document.getElementById('saveBtn');sBtn.disabled=true;sBtn.textContent='Saving…';
+  
+  // Set flag for administrator review if left blank
+  const finalDesc = desc || '⚠️ NEEDS REVIEW - UNKNOWN ITEM';
+
+  try{
+    await sb('/rest/v1/scan_codes',{method:'POST',body:JSON.stringify({
+      item_description:finalDesc, item:item||null, scan_code:sc, location:loc
+    })});
+    
+    toast('Saved to '+loc+(desc?'':'. Marked for review!'),'ok');
+    document.getElementById('assign').classList.remove('show');
+    document.getElementById('inp').value='';document.getElementById('idle').style.display='flex';
+    resetForm();
+  }catch(e){toast('Save failed: '+e.message,'er');}
+  finally{sBtn.disabled=false;sBtn.textContent='Save to Database';}
+}
+
+function resetForm(){['aDesc','aItem','aScanCode','aLoc'].forEach(id=>document.getElementById(id).value='');}
+function openCfg(){document.getElementById('cfgUrl').value=SB_URL;document.getElementById('cfgKey').value=SB_KEY;document.getElementById('cfgModal').classList.add('open');}
+function closeCfg(){document.getElementById('cfgModal').classList.remove('open');}
+async function saveCfg(){
+  const u=document.getElementById('cfgUrl').value.trim().replace(/\/$/,''),k=document.getElementById('cfgKey').value.trim();
+  if(!u||!k){toast('Both fields required','wn');return;}
+  SB_URL=u;SB_KEY=k;localStorage.setItem('sb_url',u);localStorage.setItem('sb_key',k);
+  closeCfg();await testConn();
+}
+async function testConn(){
+  setConn('Connecting…',null);
+  try{await sb('/rest/v1/scan_codes?select=id&limit=1');setConn('Connected',true);toast('Connected to Supabase','ok');}
+  catch(e){setConn('Error',false);toast('Connection failed: '+e.message,'er');}
+}
+function setConn(txt,ok){
+  document.getElementById('connTxt').textContent=txt;
+  const d=document.getElementById('dot');d.className='dot'+(ok===true?' ok':ok===false?' err':'');
+}
+function hideAll(){document.getElementById('result').classList.remove('show');document.getElementById('assign').classList.remove('show');}
+function setBusy(on){
+  const btn=document.getElementById('goBtn');btn.disabled=on;
+  btn.innerHTML=on?'<div class="spin"></div>':'Lookup';
+  if(!on)document.getElementById('idle').style.display='flex';
+}
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type;
+  setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>t.classList.remove('show'),3800);
+}
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>
