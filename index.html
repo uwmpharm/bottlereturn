@@ -359,8 +359,13 @@ footer{
 <div class="toast" id="toast"></div>
 
 <script>
-let SB_URL=localStorage.getItem('sb_url')||'';
-let SB_KEY=localStorage.getItem('sb_key')||'';
+//Uncomment below to connect from frontend UI
+//let SB_URL=localStorage.getItem('sb_url')||'';
+//let SB_KEY=localStorage.getItem('sb_key')||'';
+  
+//Comment two lines below to diable direct connection
+let SB_URL = 'https://iynuqsbgnshlromwkzfl.supabase.co';
+let SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5bnVxc2JnbnNobHJvbXdremZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDQ5NzcsImV4cCI6MjA5MTA4MDk3N30.SGvfrCXQbgbZk_ptt97R3sYGetFdB6KfRmJvoF1LpGI';
 let mode='scan_code',lastScan='';
 
 const NATO={A:'Alpha',B:'Bravo',C:'Charlie',D:'Delta',E:'Echo',F:'Foxtrot',G:'Golf',H:'Hotel',I:'India',J:'Juliet',K:'Kilo',L:'Lima',M:'Mike',N:'November',O:'Oscar',P:'Papa',Q:'Quebec',R:'Romeo',S:'Sierra',T:'Tango',U:'Uniform',V:'Victor',W:'Whiskey',X:'X-ray',Y:'Yankee',Z:'Zulu'};
