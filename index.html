@@ -402,7 +402,14 @@ async function doSearch(){
   const v = rawInput.replace(/\\/g, ''); 
   if(!v)return;
   
-  lastScan=v;hideAll();setBusy(true);
+  lastScan=v;
+  
+  // 1) Auto-clear the search box
+  document.getElementById('inp').value = '';
+  // 2) Keep the cursor in the box ready for the next scan
+  document.getElementById('inp').focus(); 
+  
+  hideAll();setBusy(true);
   if(!SB_URL||!SB_KEY){setBusy(false);toast('Configure Supabase first — click connection status','wn');openCfg();return;}
   try{
     let rows=[];
